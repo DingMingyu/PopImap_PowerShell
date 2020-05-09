@@ -8,6 +8,7 @@ In order to apply OAuth authentication, you need to fetch a valid AccessToken, e
 Run the below command to install the module.
   Install-Module -Name PopImap
 Please go through the scripts under .\scr\examples and you'll know how to communicate with a mail server through IMAP or POP3.
+To make the examples and tests work, you need to create .\data\myUserData.psm1 in your local project folder. The file content is similar to .\data\userData.psm1. The file cannot be not included in the source control because it contains user info, e.g. password. 
 
 ## Test
 .\tests\Invoke-Tests.ps1

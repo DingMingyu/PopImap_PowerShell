@@ -45,14 +45,13 @@ Describe "Get-O365Token Function" -Tag "Unit" {
 Import-Module (Join-Path -Path $rootDir -ChildPath "Data\MyUserData.psm1")
 $userData = Get-UserData
 
-function Get-Imap
-{
-  $server = "outlook.office365.com"
-  $port = 993
-  return Get-ImapClient -Server $server -Port $port -WithDefaultOutput $false
-}
-
 Describe "ImapClient Class" -Tag "Integration" {
+  function Get-Imap([MessageReceiver]$receiver) {
+    $server = "outlook.office365.com"
+    $port = 993
+    return [ImapClient]::new($server, $port)
+  }
+
   It "Connect" {
     $imap = Get-Imap
     $receiver = [MemoryMessageReceiver]::new()
@@ -94,14 +93,13 @@ Describe "ImapClient Class" -Tag "Integration" {
   }
 }
 
-function Get-Pop3
-{
-  $server = "outlook.office365.com"
-  $port = 995
-  return Get-Pop3Client -Server $server -Port $port -WithDefaultOutput $false
-}
-
 Describe "Pop3Client Class" -Tag "Integration" {
+  function Get-Pop3 {
+    $server = "outlook.office365.com"
+    $port = 995
+    return [Pop3Client]::new($server, $port)
+  }
+
   It "Connect" {
     $pop3 = Get-Pop3
     $receiver = [MemoryMessageReceiver]::new()
@@ -139,5 +137,42 @@ Describe "Pop3Client Class" -Tag "Integration" {
     $pop3.Close()
     $receiver.Store.Count| Should Be 1
     $receiver.Store[0].text | Should Be "Connection is closed."
+  }
+}
+
+Describe "Add-Output Function" -Tag "Unit" {
+  function Get-Client {
+    return [TcpClient]::new("https://contoso.com", "443")
+  }
+
+  It "With Default and File output" {
+    $client = Get-Client
+    $path = "log.log"
+    $client | Add-Output -WithDefaultOutput $true -WithFileOutput $true -OutputPath $path
+    $client.MessageReceivers.Count | Should Be 2
+    $client.MessageReceivers[0].GetType().Name | Should Be "MessageReceiver"
+    $client.MessageReceivers[1].GetType().Name | Should Be "FileMessageReceiver"
+    $client.MessageReceivers[1].path | Should Be $path
+  }
+  It "With Default output only" {
+    $client = Get-Client
+    $path = "log.log"
+    $client | Add-Output -WithDefaultOutput $true -WithFileOutput $false -OutputPath $path
+    $client.MessageReceivers.Count | Should Be 1
+    $client.MessageReceivers[0].GetType().Name | Should Be "MessageReceiver"
+  }
+  It "With file output only" {
+    $client = Get-Client
+    $path = "log.log"
+    $client | Add-Output -WithDefaultOutput $false -WithFileOutput $true -OutputPath $path
+    $client.MessageReceivers.Count | Should Be 1
+    $client.MessageReceivers[0].GetType().Name | Should Be "FileMessageReceiver"
+    $client.MessageReceivers[0].path | Should Be $path
+  }
+  It "Without any output" {
+    $client = Get-Client
+    $path = "log.log"
+    $client | Add-Output -WithDefaultOutput $false -WithFileOutput $false -OutputPath $path
+    $client.MessageReceivers.Count | Should Be 0
   }
 }

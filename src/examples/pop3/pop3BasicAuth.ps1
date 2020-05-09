@@ -7,17 +7,11 @@ $userData = Get-UserData
 
 Import-Module .\src\PopImap\PopImap.psd1
 
-$logFile = "logs\pop3.log"
-if (Test-Path $logFile)
-{
-  Remove-Item $logFile
-}
-$receiver = Get-FileMessageReceiver -Path $logFile
-
 $server = "outlook.office365.com"
 $port = 995
-$pop3 = Get-Pop3Client -Server $server -Port $port
-$pop3.MessageReceivers.Add($receiver)
+$logFile = "logs\pop3_{0:yyyyMMdd}.log" -f (Get-Date)
+
+$pop3 = Get-Pop3Client -Server $server -Port $port -OutputPath $logFile
 
 $pop3.Connect()
 $success = $pop3.Logon($userData.user, $userData.password)

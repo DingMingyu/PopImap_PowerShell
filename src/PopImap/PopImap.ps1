@@ -246,52 +246,85 @@ class Pop3Client : TcpClient
   }
 }
 
+function Add-Output {
+  [OutputType([TcpClient])]
+  param 
+  (
+    [Parameter(Mandatory=$true, ValueFromPipeline=$true)] [TcpClient]$client,
+    [Parameter(Mandatory=$true)] [bool]$WithDefaultOutput,
+    [Parameter(Mandatory=$true)] [bool]$WithFileOutput,
+    [Parameter(Mandatory=$true)] [string]$OutputPath
+  )
+  process
+  {
+    if ($WithDefaultOutput)
+    {
+      $client.MessageReceivers.Add([MessageReceiver]::new())
+    }
+    if ($WithFileOutput)
+    {
+      $client.MessageReceivers.Add([FileMessageReceiver]::new($OutputPath))
+    }
+    return $client
+  }
+}
+
+<#
+.SYNOPSIS
+    Get IMAP client to communicate with an IMAP server.
+.DESCRIPTION
+    This cmdlet returns an ImapClient object.
+.EXAMPLE
+    PS C:\>$imap = Get-ImapClient -Server "outlook.office365.com" -Port 993
+    PS C:\>$imap.Connect()
+    PS C:\>$imap.Logon("user@contoso.com", "<password>")
+    PS C:\>$imap.ExecuteCommand("list `"INBOX/`" *")
+    PS C:\>$imap.Close()
+#>
 function Get-ImapClient
 {
+  [OutputType([ImapClient])]
   param
   (
     [Parameter(Mandatory=$true)] [string]$Server,
     [Parameter(Mandatory=$true)] [int]$Port,
-    [Parameter(Mandatory=$false)] [bool]$WithDefaultOutput = $true
+    [Parameter(Mandatory=$false)] [bool]$WithDefaultOutput = $true,
+    [Parameter(Mandatory=$false)] [bool]$WithFileOutput = $true,
+    [Parameter(Mandatory=$false)] [string]$OutputPath = "logs\imap.log"
   )  
   process
   {
     $client = [ImapClient]::new($Server, $Port)
-    if ($WithDefaultOutput)
-    {
-      $client.MessageReceivers.Add([MessageReceiver]::new())
-    }
-    return $client
+    return $client | Add-Output -WithDefaultOutput $WithDefaultOutput -WithFileOutput $WithFileOutput -OutputPath $OutputPath
   }  
 }
 
+<#
+.SYNOPSIS
+    Get POP3 client to communicate with an POP3 server.
+.DESCRIPTION
+    This cmdlet returns an Pop3Client object.
+.EXAMPLE
+    PS C:\>$pop3 = Get-Pop3Client -Server "outlook.office365.com" -Port 995
+    PS C:\>$pop3.Connect()
+    PS C:\>$pop3.Logon("user@contoso.com", "<password>")
+    PS C:\>$pop3.ExecuteCommand("LIST")
+    PS C:\>$pop3.Close()
+#>
 function Get-Pop3Client
 {
+  [OutputType([Pop3Client])]
   param
   (
     [Parameter(Mandatory=$true)] [string]$Server,
     [Parameter(Mandatory=$true)] [int]$Port,
-    [Parameter(Mandatory=$false)] [bool]$WithDefaultOutput = $true
+    [Parameter(Mandatory=$false)] [bool]$WithDefaultOutput = $true,
+    [Parameter(Mandatory=$false)] [bool]$WithFileOutput = $true,
+    [Parameter(Mandatory=$false)] [string]$OutputPath = "logs\pop3.log"
   )  
   process
   {
     $client = [Pop3Client]::new($Server, $Port)
-    if ($WithDefaultOutput)
-    {
-      $client.MessageReceivers.Add([MessageReceiver]::new())
-    }
-    return $client
+    return $client | Add-Output -WithDefaultOutput $WithDefaultOutput -WithFileOutput $WithFileOutput -OutputPath $OutputPath
   }  
-}
-
-function Get-FileMessageReceiver 
-{
-  param
-  (
-    [Parameter(Mandatory=$true)] [string]$Path
-  )
-  process
-  {
-    return [FileMessageReceiver]::new($Path)
-  }
 }
