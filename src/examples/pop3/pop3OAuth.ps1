@@ -1,5 +1,3 @@
-# By the date of submission, the Exchange Online hasn't deployed OAuth for POP3 in PROD. So this example may fail to authenticate. 
-
 # Set-Location D:\dev\work\Exchange\PopImap
 Set-Location (Join-Path -Path $PSScriptRoot -ChildPath "..\..\..\")
 
