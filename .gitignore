@@ -1,2 +1,2 @@
-MyUserData.psm1
+MyUserData*.psm1
 *.log
