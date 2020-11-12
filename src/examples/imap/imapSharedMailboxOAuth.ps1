@@ -17,7 +17,7 @@ $port = 993
 $imap = Get-ImapClient -Server $server -Port $port
 
 $imap.Connect()
-$success = $imap.O365AuthenticateSharedMailbox($msalToken.AccessToken, $userData.user, $userData.sharedMailbox)
+$success = $imap.O365Authenticate($msalToken.AccessToken, $userData.sharedMailbox)
 if ($success)
 {
   $success = $imap.ExecuteCommand("list `"INBOX/`" *")
