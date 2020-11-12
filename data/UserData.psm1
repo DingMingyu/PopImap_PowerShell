@@ -1,6 +1,7 @@
 class UserData
 {
-  [string]$user = "xxxxn@xxxxx.onmicrosoft.com"
+  [string]$sharedMailbox = "Sharedxxxx@xxxxx.onmicrosoft.com"
+  [string]$user = "xxxx@xxxxx.onmicrosoft.com"
   [string]$password = "xxxxx"
   [guid]$clientId = "xxxxxxxxxxxxxxxxxxxxxx"
   [guid]$tenantId = "xxxxxxxxxxxxxxxxxxxxxx"

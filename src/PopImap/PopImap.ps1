@@ -157,6 +157,12 @@ class ImapClient : TcpClient
     return $this.XOauth2Authenticate($token)
   }
 
+  [bool]O365AuthenticateSharedMailbox([string]$accessToken, [string]$upn, [string]$sharedMailbox)
+  {
+    $token = Get-O365Token -accessToken $accessToken -upn $sharedMailbox
+    return $this.XOauth2Authenticate($token)
+  }
+
   [string]redact([string]$text)
   {
     $parts = $text.Split(" ")
