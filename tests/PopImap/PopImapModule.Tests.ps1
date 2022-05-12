@@ -46,7 +46,7 @@ Import-Module (Join-Path -Path $rootDir -ChildPath "Data\MyUserData.psm1")
 $userData = Get-UserData
 
 Describe "ImapClient Class" -Tag "Integration" {
-  function Get-Imap([MessageReceiver]$receiver) {
+  function Get-Imap() {
     $server = "outlook.office365.com"
     $port = 993
     return [ImapClient]::new($server, $port)
@@ -70,7 +70,7 @@ Describe "ImapClient Class" -Tag "Integration" {
     $receiver.Store.Count| Should Be 2
     $text = "0001 login {0} ****" -f $userData.user
     $receiver.Store[0].text | Should Be $text
-    $receiver.Store[1].text | Should Be "0001 OK LOGIN completed.`r`n"
+    $receiver.Store[1].text | Should Be "0001 OK LOGIN completed."
   }
   It "Logon with incorrect user pass" {
     $imap = Get-Imap
@@ -80,7 +80,7 @@ Describe "ImapClient Class" -Tag "Integration" {
     $success = $imap.Logon($userData.user, "bad password")
     $success | Should Be $false
     $receiver.Store.Count| Should Be 2
-    $receiver.Store[1].text | Should Be "0001 BAD Command Argument Error. 12`r`n"
+    $receiver.Store[1].text | Should Be "0001 BAD Command Argument Error. 12"
   }
   It "Close" {
     $imap = Get-Imap

@@ -126,18 +126,43 @@ class ImapClient : TcpClient
   {
     $tagText = $this.getNextTagText()
     $cmdText = [string]::Format("{0} {1}", $tagText, $cmd)
-    $this.SendMessage("C", $this.redact($cmdText))
-    $this.writer.WriteLine($cmdText)
-    $sb = [System.Text.StringBuilder]::new()
+    $this.ExecutePartial($cmdText)
     do 
     {
-      $line = $this.reader.ReadLine()
-      $sb.AppendLine($line)
+      $line = $this.ReadPartial()
     }
     while(!$line.StartsWith($tagText + " "))
     $parts = $line.Split(" ")
-    $this.SendMessage("S", $sb.ToString())
     return $parts.Length -gt 1 -and $parts[1] -eq "OK"
+  }
+
+  [void]ExecutePartial($cmd)
+  {
+    $this.SendMessage("C", $this.redact($cmd))
+    $this.writer.WriteLine($cmd)
+  }
+
+  [string]ReadPartial()
+  {
+    $result = $this.reader.ReadLine()
+    $this.SendMessage("S", $result)
+    return $result
+  }
+
+  [bool]SaveEmail([string]$folder, [string]$content)
+  {
+    $t = $this.getNextTagText()
+    $cmd = "$t APPEND $folder {" + $content.Length + "}"
+    $this.ExecutePartial($cmd)
+    $line = $this.ReadPartial()
+    if ($line -and $line.StartsWith("+ Ready for additional command text."))
+    {
+      $this.ExecutePartial($content)
+      $line = $this.ReadPartial()
+      $parts = $line.Split(" ")
+      return $parts.Length -gt 1 -and $parts[1] -eq "OK"
+    }
+    return $false
   }
 
   [bool]Logon([string]$user, [string]$pass)
