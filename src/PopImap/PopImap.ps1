@@ -92,11 +92,11 @@ class TcpClient
     $this.SendMessage("S", $line)
   }
 
-  [void]SendMessage([string]$sender, [string]$text)
+  [void]SendMessage([string]$from, [string]$text)
   {
     [Message]$msg = @{
       text = $text
-      sender = $sender
+      sender = $from
     }
     foreach($receiver in $this.MessageReceivers)
     {
@@ -127,11 +127,14 @@ class ImapClient : TcpClient
     $tagText = $this.getNextTagText()
     $cmdText = [string]::Format("{0} {1}", $tagText, $cmd)
     $this.ExecutePartial($cmdText)
+    $sb = [System.Text.StringBuilder]::new()
     do 
     {
-      $line = $this.ReadPartial()
+      $line = $this.reader.ReadLine()
+      $sb.AppendLine($line)
     }
     while(!$line.StartsWith($tagText + " "))
+    $this.SendMessage("S", $sb.ToString())
     $parts = $line.Split(" ")
     return $parts.Length -gt 1 -and $parts[1] -eq "OK"
   }
@@ -214,13 +217,13 @@ class Pop3Client : TcpClient
     $line = $this.reader.ReadLine()
     $sb.AppendLine($line)
 
-    $input = $cmd.Split(" ")
-    $c1 = $input[0].ToUpper()
+    $parts = $cmd.Split(" ")
+    $c1 = $parts[0].ToUpper()
     $hasMore = ($c1 -eq "RETR") `
       -or ($c1 -eq "TOP") `
       -or ($c1 -eq "CAPA") `
-      -or (($c1 -eq "LIST") -and ($input.Length -eq 1)) `
-      -or (($c1 -eq "UIDL") -and ($input.Length -eq 1))
+      -or (($c1 -eq "LIST") -and ($parts.Length -eq 1)) `
+      -or (($c1 -eq "UIDL") -and ($parts.Length -eq 1))
     $result = $line.StartsWith("+")
     if ($hasMore -and $line.StartsWith("+OK"))
     {
