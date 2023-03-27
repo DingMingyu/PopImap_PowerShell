@@ -7,7 +7,7 @@ $userData = Get-UserData
 
 # 3rd party module required to fetch AccessToken from Azure.
 Import-Module MSAL.PS
-$scopes =  @("https://outlook.office365.com/IMAP.AccessAsUser.All")
+$scopes =  @("https://outlook.office365.com/.default")
 $msalToken = Get-MsalToken -ClientId $userData.clientId -TenantId $userData.tenantId -Scopes $scopes -Interactive
 
 Import-Module .\src\PopImap\PopImap.psd1
